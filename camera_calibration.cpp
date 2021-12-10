@@ -1,5 +1,6 @@
 #include<opencv2/core/core.hpp>
 #include<opencv2/opencv.hpp>
+#include<opencv2/calib3d.hpp>
 #include<opencv2/calib3d/calib3d.hpp>
 #include<opencv2/highgui/highgui.hpp>
 #include<opencv2/imgproc/imgproc.hpp>
@@ -8,6 +9,7 @@
 #include<vector>
 #include<string> 
 #include<ctime>
+
 
 using namespace std;
 
@@ -23,7 +25,8 @@ bool writeYaml(const cv::Mat& cameraMatrix, const cv::Mat& distCoeffs);
 int main(int argc, char* argv[])
 {
 	// Defining the dimensions of checkerboard
-	int CHECKERBOARD[2] = {6,9}; 
+	//int CHECKERBOARD[2] = {6,9};
+	int CHECKERBOARD[2] = {6,8}; 
 	// Creating vector to store vectors of 3D points (world coordinate) for each checkerboard image
 	vector< vector<cv::Point3f> > objpoints;
   	// Creating vector to store vectors of 2D points (pixel coordinate) for each checkerboard image
@@ -43,7 +46,8 @@ int main(int argc, char* argv[])
   	vector<cv::String> filenames;
   	// Path of the folder containing checkerboard images
   	// ** nend to ENTER "absolute path(絕對路徑)" **
-  	string path = "/home/entropy/Clearning/camera_calibration/images/*.jpg";
+  	//string path = "/home/entropy/Clearning/camera_calibration/images/*.jpg";
+  	string path = "/home/entropy/Clearning/camera_calibration/fr1_rgb_calibration/*.png";
   	cv::glob(path, filenames);
 
   	cv::Mat frame, gray;
@@ -77,18 +81,22 @@ int main(int argc, char* argv[])
     	}
 
     	cv::imshow("Image",frame);
-    	cv::waitKey(100); // wait 200ms per image
+    	cv::waitKey(100); // wait ...ms per image
   	}
 	// clear all displays
   	cv::destroyAllWindows();
   	// define intrinsic and extrinsic parameters
-  	cv::Mat cameraMatrix, distCoeffs;
+  	cv::Mat cameraMatrix, distCoeffs, newcameraMatrix;
   	vector<cv::Mat> R, T;
 	// call opencv calibration function
 	cout << "Camera calibrating ..." << endl << endl;
   	cv::calibrateCamera(objpoints, imgpoints, cv::Size(gray.rows,gray.cols), cameraMatrix, distCoeffs, R, T);
   	// with cv::CALIB_RATIONAL_MODEL
 	// cv::calibrateCamera(objpoints, imgpoints, cv::Size(gray.rows,gray.cols), cameraMatrix, distCoeffs, R, T, cv::CALIB_RATIONAL_MODEL);
+	
+	// get new camera matrix
+	newcameraMatrix = cv::getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, cv::Size(gray.rows,gray.cols), 1, cv::Size(gray.rows,gray.cols), 0);
+	
 	double reproj_error;
 	vector<float> ViewError;
 	reproj_error = computeReprojectionErrors(objpoints, imgpoints, R, T, cameraMatrix, distCoeffs, ViewError);
@@ -97,6 +105,7 @@ int main(int argc, char* argv[])
 	cout << "Calibration Result: " << endl;
   	cout << "cameraMatrix: " << endl << cameraMatrix << endl << endl;
   	cout << "distCoeffs: " << endl << distCoeffs << endl << endl;
+  	cout << "newcameraMatrix: " << endl << newcameraMatrix << endl;
   	cout << "reprojection error(unit: pixel): " << endl << reproj_error << endl << endl;
   	
   	cout << "Write camera paramters to .yaml file ..." << endl;
