@@ -129,9 +129,8 @@ double computeReprojectionErrors( const vector<vector<cv::Point3f> >& objectPoin
     size_t totalPoints = 0;
     double totalErr = 0, err;
     perViewErrors.resize(objectPoints.size());
-		//for(size_t i = 0; i < objectPoints.size(); ++i )
-		for(size_t i=0; i<1; i++)
-		{
+		//for(size_t i=0; i<1; i++)
+		for(size_t i = 0; i < objectPoints.size(); ++i ){
 		    cv::projectPoints(objectPoints[i], rvecs[i], tvecs[i], cameraMatrix, distCoeffs, imagePoints_pro);
 		    err = cv::norm(imagePoints[i], imagePoints_pro, cv::NORM_L2);
 		    size_t n = objectPoints[i].size();
@@ -165,9 +164,6 @@ bool writeYaml(const cv::Mat& cameraMatrix, const cv::Mat& distCoeffs)
     
     return true;
 }
-
-
-
 
 
 
